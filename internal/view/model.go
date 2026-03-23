@@ -79,3 +79,56 @@ type CompanyDetail struct {
 	Notes     string
 	CreatedAt time.Time
 }
+
+// Form types
+
+type SelectOption struct {
+	Value    string
+	Label    string
+	Selected bool
+}
+
+type FormErrors map[string]string
+
+func (e FormErrors) Get(field string) string {
+	if e == nil {
+		return ""
+	}
+	return e[field]
+}
+
+type ContactFormData struct {
+	ID        string
+	FirstName string
+	LastName  string
+	Email     string
+	Phone     string
+	Tags      string
+	CompanyID string
+}
+
+type CompanyFormData struct {
+	ID      string
+	Name    string
+	Address string
+	Website string
+	Notes   string
+}
+
+type DealFormData struct {
+	ID        string
+	Title     string
+	Stage     string
+	Value     string
+	ContactID string
+	CompanyID string
+}
+
+type TaskFormData struct {
+	ID         string
+	Title      string
+	DueDate    string
+	ContactID  string
+	DealID     string
+	AssignedTo string
+}

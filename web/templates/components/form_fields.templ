@@ -1,0 +1,106 @@
+package components
+
+import "github.com/dukerupert/cairnpost/internal/view"
+
+templ TextInput(name, label, value, placeholder string, required bool, errMsg string) {
+	<div>
+		<label for={ name } class="block text-sm font-medium text-gray-700">
+			{ label }
+			if required {
+				<span class="text-red-500">*</span>
+			}
+		</label>
+		<input
+			type="text"
+			id={ name }
+			name={ name }
+			value={ value }
+			placeholder={ placeholder }
+			if required {
+				required
+			}
+			if errMsg != "" {
+				class="mt-1 block w-full rounded-lg border border-red-500 px-3 py-2 text-sm placeholder-gray-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+			} else {
+				class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+			}
+		/>
+		if errMsg != "" {
+			<p class="mt-1 text-xs text-red-600">{ errMsg }</p>
+		}
+	</div>
+}
+
+templ TextArea(name, label, value, placeholder string, errMsg string) {
+	<div>
+		<label for={ name } class="block text-sm font-medium text-gray-700">{ label }</label>
+		<textarea
+			id={ name }
+			name={ name }
+			placeholder={ placeholder }
+			rows="3"
+			if errMsg != "" {
+				class="mt-1 block w-full rounded-lg border border-red-500 px-3 py-2 text-sm placeholder-gray-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+			} else {
+				class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+			}
+		>{ value }</textarea>
+		if errMsg != "" {
+			<p class="mt-1 text-xs text-red-600">{ errMsg }</p>
+		}
+	</div>
+}
+
+templ SelectField(name, label string, options []view.SelectOption, required bool, errMsg string) {
+	<div>
+		<label for={ name } class="block text-sm font-medium text-gray-700">
+			{ label }
+			if required {
+				<span class="text-red-500">*</span>
+			}
+		</label>
+		<select
+			id={ name }
+			name={ name }
+			if required {
+				required
+			}
+			if errMsg != "" {
+				class="mt-1 block w-full rounded-lg border border-red-500 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+			} else {
+				class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+			}
+		>
+			for _, opt := range options {
+				if opt.Selected {
+					<option value={ opt.Value } selected>{ opt.Label }</option>
+				} else {
+					<option value={ opt.Value }>{ opt.Label }</option>
+				}
+			}
+		</select>
+		if errMsg != "" {
+			<p class="mt-1 text-xs text-red-600">{ errMsg }</p>
+		}
+	</div>
+}
+
+templ DateInput(name, label, value string, errMsg string) {
+	<div>
+		<label for={ name } class="block text-sm font-medium text-gray-700">{ label }</label>
+		<input
+			type="date"
+			id={ name }
+			name={ name }
+			value={ value }
+			if errMsg != "" {
+				class="mt-1 block w-full rounded-lg border border-red-500 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+			} else {
+				class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+			}
+		/>
+		if errMsg != "" {
+			<p class="mt-1 text-xs text-red-600">{ errMsg }</p>
+		}
+	</div>
+}

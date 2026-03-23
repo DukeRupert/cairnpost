@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -57,15 +56,36 @@ func NewPageHandler(
 
 func (h *PageHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /{$}", h.Today)
+
 	mux.HandleFunc("GET /contacts", h.Contacts)
+	mux.HandleFunc("GET /contacts/new", h.ContactNew)
+	mux.HandleFunc("POST /contacts", h.ContactCreate)
 	mux.HandleFunc("GET /contacts/{id}", h.ContactDetail)
+	mux.HandleFunc("GET /contacts/{id}/edit", h.ContactEdit)
+	mux.HandleFunc("POST /contacts/{id}", h.ContactUpdate)
 	mux.HandleFunc("POST /contacts/{id}/activities", h.CreateContactActivity)
+
 	mux.HandleFunc("GET /companies", h.Companies)
+	mux.HandleFunc("GET /companies/new", h.CompanyNew)
+	mux.HandleFunc("POST /companies", h.CompanyCreate)
 	mux.HandleFunc("GET /companies/{id}", h.CompanyDetail)
+	mux.HandleFunc("GET /companies/{id}/edit", h.CompanyEdit)
+	mux.HandleFunc("POST /companies/{id}", h.CompanyUpdate)
+
 	mux.HandleFunc("GET /deals", h.Deals)
+	mux.HandleFunc("GET /deals/new", h.DealNew)
+	mux.HandleFunc("POST /deals", h.DealCreate)
 	mux.HandleFunc("GET /deals/{id}", h.DealDetail)
+	mux.HandleFunc("GET /deals/{id}/edit", h.DealEdit)
+	mux.HandleFunc("POST /deals/{id}", h.DealUpdate)
 	mux.HandleFunc("POST /deals/{id}/activities", h.CreateDealActivity)
+
 	mux.HandleFunc("GET /tasks", h.Tasks)
+	mux.HandleFunc("GET /tasks/new", h.TaskNew)
+	mux.HandleFunc("POST /tasks", h.TaskCreate)
+	mux.HandleFunc("GET /tasks/{id}/edit", h.TaskEdit)
+	mux.HandleFunc("POST /tasks/{id}", h.TaskUpdate)
+
 	mux.HandleFunc("GET /settings", h.Settings)
 }
 
@@ -479,18 +499,6 @@ func (h *PageHandler) activityRows(ctx context.Context, activities []model.Activ
 		}
 	}
 	return rows
-}
-
-func contactName(c model.Contact) string {
-	name := c.FirstName
-	if c.LastName != "" {
-		name += " " + c.LastName
-	}
-	return name
-}
-
-func formatActivityAction(postURL string) string {
-	return fmt.Sprintf("%s", postURL)
 }
 
 func isHTMX(r *http.Request) bool {

@@ -12,6 +12,7 @@ templ TasksPage(tasks []view.TaskRow) {
 		<div class="max-w-6xl">
 			<div class="flex items-center justify-between mb-6">
 				<h1 class="text-2xl font-semibold text-gray-900">Tasks</h1>
+				<a href="/tasks/new" class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-light transition-colors">New Task</a>
 			</div>
 			@TasksTable(tasks)
 		</div>

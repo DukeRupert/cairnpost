@@ -1,0 +1,53 @@
+package pages
+
+import (
+	"fmt"
+
+	"github.com/dukerupert/cairnpost/internal/view"
+	"github.com/dukerupert/cairnpost/web/templates/components"
+	"github.com/dukerupert/cairnpost/web/templates/layouts"
+)
+
+func dealFormTitle(id string) string {
+	if id == "" {
+		return "New Deal"
+	}
+	return "Edit Deal"
+}
+
+func dealFormAction(id string) string {
+	if id == "" {
+		return "/deals"
+	}
+	return fmt.Sprintf("/deals/%s", id)
+}
+
+templ DealFormPage(data view.DealFormData, errs view.FormErrors, contacts []view.SelectOption, companies []view.SelectOption, stages []view.SelectOption) {
+	@layouts.Base(dealFormTitle(data.ID), "/deals") {
+		<div class="max-w-2xl">
+			<a href="/deals" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
+				&larr; Deals
+			</a>
+			<h1 class="mt-4 text-2xl font-semibold text-gray-900">{ dealFormTitle(data.ID) }</h1>
+			<form method="POST" action={ templ.SafeURL(dealFormAction(data.ID)) } class="mt-6 space-y-4">
+				@components.TextInput("title", "Title", data.Title, "Website redesign", true, errs.Get("title"))
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					@components.SelectField("stage", "Stage", stages, false, errs.Get("stage"))
+					@components.TextInput("value", "Value ($)", data.Value, "5000.00", false, errs.Get("value"))
+				</div>
+				@components.SelectField("contact_id", "Contact", contacts, true, errs.Get("contact_id"))
+				@components.SelectField("company_id", "Company", companies, false, errs.Get("company_id"))
+				<div class="flex items-center gap-3 pt-2">
+					<button type="submit" class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-light transition-colors">
+						if data.ID == "" {
+							Create Deal
+						} else {
+							Save Changes
+						}
+					</button>
+					<a href="/deals" class="text-sm text-gray-500 hover:text-gray-700">Cancel</a>
+				</div>
+			</form>
+		</div>
+	}
+}

@@ -1,0 +1,55 @@
+package pages
+
+import (
+	"fmt"
+
+	"github.com/dukerupert/cairnpost/internal/view"
+	"github.com/dukerupert/cairnpost/web/templates/components"
+	"github.com/dukerupert/cairnpost/web/templates/layouts"
+)
+
+func taskFormTitle(id string) string {
+	if id == "" {
+		return "New Task"
+	}
+	return "Edit Task"
+}
+
+func taskFormAction(id string) string {
+	if id == "" {
+		return "/tasks"
+	}
+	return fmt.Sprintf("/tasks/%s", id)
+}
+
+templ TaskFormPage(data view.TaskFormData, errs view.FormErrors, users []view.SelectOption, contacts []view.SelectOption, deals []view.SelectOption) {
+	@layouts.Base(taskFormTitle(data.ID), "/tasks") {
+		<div class="max-w-2xl">
+			<a href="/tasks" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
+				&larr; Tasks
+			</a>
+			<h1 class="mt-4 text-2xl font-semibold text-gray-900">{ taskFormTitle(data.ID) }</h1>
+			<form method="POST" action={ templ.SafeURL(taskFormAction(data.ID)) } class="mt-6 space-y-4">
+				@components.TextInput("title", "Title", data.Title, "Follow up with client", true, errs.Get("title"))
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					@components.DateInput("due_date", "Due Date", data.DueDate, errs.Get("due_date"))
+					@components.SelectField("assigned_to", "Assigned To", users, true, errs.Get("assigned_to"))
+				</div>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					@components.SelectField("contact_id", "Contact", contacts, false, errs.Get("contact_id"))
+					@components.SelectField("deal_id", "Deal", deals, false, errs.Get("deal_id"))
+				</div>
+				<div class="flex items-center gap-3 pt-2">
+					<button type="submit" class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-light transition-colors">
+						if data.ID == "" {
+							Create Task
+						} else {
+							Save Changes
+						}
+					</button>
+					<a href="/tasks" class="text-sm text-gray-500 hover:text-gray-700">Cancel</a>
+				</div>
+			</form>
+		</div>
+	}
+}

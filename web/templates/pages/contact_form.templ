@@ -1,0 +1,56 @@
+package pages
+
+import (
+	"fmt"
+
+	"github.com/dukerupert/cairnpost/internal/view"
+	"github.com/dukerupert/cairnpost/web/templates/components"
+	"github.com/dukerupert/cairnpost/web/templates/layouts"
+)
+
+func contactFormTitle(id string) string {
+	if id == "" {
+		return "New Contact"
+	}
+	return "Edit Contact"
+}
+
+func contactFormAction(id string) string {
+	if id == "" {
+		return "/contacts"
+	}
+	return fmt.Sprintf("/contacts/%s", id)
+}
+
+templ ContactFormPage(data view.ContactFormData, errs view.FormErrors, companies []view.SelectOption) {
+	@layouts.Base(contactFormTitle(data.ID), "/contacts") {
+		<div class="max-w-2xl">
+			<a href="/contacts" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
+				&larr; Contacts
+			</a>
+			<h1 class="mt-4 text-2xl font-semibold text-gray-900">{ contactFormTitle(data.ID) }</h1>
+			<form method="POST" action={ templ.SafeURL(contactFormAction(data.ID)) } class="mt-6 space-y-4">
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					@components.TextInput("first_name", "First Name", data.FirstName, "Jane", true, errs.Get("first_name"))
+					@components.TextInput("last_name", "Last Name", data.LastName, "Doe", false, errs.Get("last_name"))
+				</div>
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					@components.TextInput("email", "Email", data.Email, "jane@example.com", false, errs.Get("email"))
+					@components.TextInput("phone", "Phone", data.Phone, "(406) 555-1234", false, errs.Get("phone"))
+				</div>
+				@components.TextInput("tags", "Tags", data.Tags, "vip, contractor, referral", false, errs.Get("tags"))
+				@components.SelectField("company_id", "Company", companies, false, errs.Get("company_id"))
+				<div class="flex items-center gap-3 pt-2">
+					<button type="submit" class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-light transition-colors">
+						if data.ID == "" {
+							Create Contact
+						} else {
+							Save Changes
+						}
+					</button>
+					<a href="/contacts" class="text-sm text-gray-500 hover:text-gray-700">Cancel</a>
+				</div>
+			</form>
+		</div>
+	}
+}

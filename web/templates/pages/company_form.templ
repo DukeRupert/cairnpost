@@ -1,0 +1,50 @@
+package pages
+
+import (
+	"fmt"
+
+	"github.com/dukerupert/cairnpost/internal/view"
+	"github.com/dukerupert/cairnpost/web/templates/components"
+	"github.com/dukerupert/cairnpost/web/templates/layouts"
+)
+
+func companyFormTitle(id string) string {
+	if id == "" {
+		return "New Company"
+	}
+	return "Edit Company"
+}
+
+func companyFormAction(id string) string {
+	if id == "" {
+		return "/companies"
+	}
+	return fmt.Sprintf("/companies/%s", id)
+}
+
+templ CompanyFormPage(data view.CompanyFormData, errs view.FormErrors) {
+	@layouts.Base(companyFormTitle(data.ID), "/companies") {
+		<div class="max-w-2xl">
+			<a href="/companies" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
+				&larr; Companies
+			</a>
+			<h1 class="mt-4 text-2xl font-semibold text-gray-900">{ companyFormTitle(data.ID) }</h1>
+			<form method="POST" action={ templ.SafeURL(companyFormAction(data.ID)) } class="mt-6 space-y-4">
+				@components.TextInput("name", "Name", data.Name, "Company name", true, errs.Get("name"))
+				@components.TextInput("address", "Address", data.Address, "123 Main St", false, errs.Get("address"))
+				@components.TextInput("website", "Website", data.Website, "https://example.com", false, errs.Get("website"))
+				@components.TextArea("notes", "Notes", data.Notes, "Additional notes...", errs.Get("notes"))
+				<div class="flex items-center gap-3 pt-2">
+					<button type="submit" class="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-light transition-colors">
+						if data.ID == "" {
+							Create Company
+						} else {
+							Save Changes
+						}
+					</button>
+					<a href="/companies" class="text-sm text-gray-500 hover:text-gray-700">Cancel</a>
+				</div>
+			</form>
+		</div>
+	}
+}
