@@ -1,12 +1,86 @@
 package pages
 
-import "github.com/dukerupert/cairnpost/web/templates/layouts"
+import (
+	"time"
 
-templ Tasks() {
+	"github.com/dukerupert/cairnpost/internal/view"
+	"github.com/dukerupert/cairnpost/web/templates/layouts"
+)
+
+templ TasksPage(tasks []view.TaskRow) {
 	@layouts.Base("Tasks", "/tasks") {
-		<div class="max-w-4xl">
-			<h1 class="text-2xl font-semibold text-gray-900">Tasks</h1>
-			<p class="mt-2 text-gray-500">Task list will appear here.</p>
+		<div class="max-w-6xl">
+			<div class="flex items-center justify-between mb-6">
+				<h1 class="text-2xl font-semibold text-gray-900">Tasks</h1>
+			</div>
+			@TasksTable(tasks)
 		</div>
+	}
+}
+
+templ TasksTable(tasks []view.TaskRow) {
+	if len(tasks) == 0 {
+		<div class="py-12 text-center text-gray-500">
+			<p>No tasks yet.</p>
+		</div>
+	} else {
+		<div class="overflow-hidden rounded-lg border border-gray-200">
+			<table class="min-w-full divide-y divide-gray-200">
+				<thead class="bg-gray-50">
+					<tr>
+						<th class="w-10 px-4 py-3"></th>
+						<th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Title</th>
+						<th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Due Date</th>
+						<th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Assigned To</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-gray-200 bg-white">
+					for _, t := range tasks {
+						<tr class="hover:bg-gray-50">
+							<td class="px-4 py-3 text-center">
+								if t.Done {
+									<span class="text-green-600">&#10003;</span>
+								} else {
+									<span class="text-gray-300">&#9675;</span>
+								}
+							</td>
+							<td class="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
+								if t.Done {
+									<span class="line-through text-gray-400">{ t.Title }</span>
+								} else {
+									{ t.Title }
+								}
+							</td>
+							<td class="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
+								if t.DueDate != nil {
+									@dueDateDisplay(*t.DueDate)
+								} else {
+									<span class="text-gray-300">No date</span>
+								}
+							</td>
+							<td class="whitespace-nowrap px-4 py-3 text-sm text-gray-500">{ t.AssignedName }</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+}
+
+func formatDate(t time.Time) string {
+	return t.Format("Jan 2, 2006")
+}
+
+func isOverdue(t time.Time) bool {
+	now := time.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	return t.Before(today)
+}
+
+templ dueDateDisplay(d time.Time) {
+	if isOverdue(d) {
+		<span class="text-red-600 font-medium">{ formatDate(d) }</span>
+	} else {
+		{ formatDate(d) }
 	}
 }

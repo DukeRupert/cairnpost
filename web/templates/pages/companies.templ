@@ -1,12 +1,65 @@
 package pages
 
-import "github.com/dukerupert/cairnpost/web/templates/layouts"
+import (
+	"github.com/dukerupert/cairnpost/internal/view"
+	"github.com/dukerupert/cairnpost/web/templates/layouts"
+)
 
-templ Companies() {
+templ CompaniesPage(companies []view.CompanyRow, search string) {
 	@layouts.Base("Companies", "/companies") {
-		<div class="max-w-4xl">
-			<h1 class="text-2xl font-semibold text-gray-900">Companies</h1>
-			<p class="mt-2 text-gray-500">Company list will appear here.</p>
+		<div class="max-w-6xl">
+			<div class="flex items-center justify-between mb-6">
+				<h1 class="text-2xl font-semibold text-gray-900">Companies</h1>
+			</div>
+			<div class="mb-4">
+				<input
+					type="search"
+					name="search"
+					value={ search }
+					placeholder="Search companies..."
+					hx-get="/companies"
+					hx-target="#companies-table"
+					hx-trigger="input changed delay:300ms, search"
+					hx-swap="innerHTML"
+					class="w-full max-w-sm rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+				/>
+			</div>
+			<div id="companies-table">
+				@CompaniesTable(companies, search)
+			</div>
+		</div>
+	}
+}
+
+templ CompaniesTable(companies []view.CompanyRow, search string) {
+	if len(companies) == 0 {
+		<div class="py-12 text-center text-gray-500">
+			if search != "" {
+				<p>No companies matching "{ search }"</p>
+			} else {
+				<p>No companies yet.</p>
+			}
+		</div>
+	} else {
+		<div class="overflow-hidden rounded-lg border border-gray-200">
+			<table class="min-w-full divide-y divide-gray-200">
+				<thead class="bg-gray-50">
+					<tr>
+						<th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Name</th>
+						<th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Website</th>
+						<th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Address</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-gray-200 bg-white">
+					for _, c := range companies {
+						<tr class="hover:bg-gray-50">
+							<td class="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">{ c.Name }</td>
+							<td class="whitespace-nowrap px-4 py-3 text-sm text-gray-500">{ c.Website }</td>
+							<td class="whitespace-nowrap px-4 py-3 text-sm text-gray-500">{ c.Address }</td>
+						</tr>
+					}
+				</tbody>
+			</table>
 		</div>
 	}
 }

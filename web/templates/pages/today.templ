@@ -1,12 +1,44 @@
 package pages
 
-import "github.com/dukerupert/cairnpost/web/templates/layouts"
+import (
+	"fmt"
 
-templ Today() {
+	"github.com/dukerupert/cairnpost/internal/view"
+	"github.com/dukerupert/cairnpost/web/templates/layouts"
+)
+
+templ TodayPage(overdue []view.TaskRow, dueToday []view.TaskRow) {
 	@layouts.Base("Today", "/") {
-		<div class="max-w-4xl">
+		<div class="max-w-4xl space-y-8">
 			<h1 class="text-2xl font-semibold text-gray-900">Today</h1>
-			<p class="mt-2 text-gray-500">Your daily agenda will appear here.</p>
+			if len(overdue) == 0 && len(dueToday) == 0 {
+				<div class="py-12 text-center text-gray-500">
+					<p class="text-lg">All caught up!</p>
+					<p class="mt-1 text-sm">No overdue or due-today tasks.</p>
+				</div>
+			}
+			if len(overdue) > 0 {
+				<section>
+					<h2 class="mb-3 text-lg font-medium text-red-700">
+						Overdue
+						<span class="ml-1 text-sm font-normal text-red-500">({ itoa(len(overdue)) })</span>
+					</h2>
+					@TasksTable(overdue)
+				</section>
+			}
+			if len(dueToday) > 0 {
+				<section>
+					<h2 class="mb-3 text-lg font-medium text-gray-700">
+						Due Today
+						<span class="ml-1 text-sm font-normal text-gray-500">({ itoa(len(dueToday)) })</span>
+					</h2>
+					@TasksTable(dueToday)
+				</section>
+			}
 		</div>
 	}
+}
+
+func itoa(n int) string {
+	return fmt.Sprintf("%d", n)
 }

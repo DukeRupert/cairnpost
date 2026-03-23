@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -50,8 +51,15 @@ func main() {
 	dealH := handler.NewDealHandler(dealSvc)
 	taskH := handler.NewTaskHandler(taskSvc)
 
+	// Resolve org at startup (single-org v1)
+	org, err := orgRepo.GetBySlug(context.Background(), cfg.OrgSlug)
+	if err != nil {
+		log.Fatalf("resolving org slug %q: %v", cfg.OrgSlug, err)
+	}
+	log.Printf("Resolved org: %s (id=%s)", org.Name, org.ID)
+
 	// Page handler (HTML routes)
-	pageH := handler.NewPageHandler(cfg.OrgSlug)
+	pageH := handler.NewPageHandler(org.ID, contactSvc, companySvc, dealSvc, taskSvc, contactRepo, userRepo)
 
 	// Routes
 	mux := http.NewServeMux()
