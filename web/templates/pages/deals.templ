@@ -12,8 +12,8 @@ func formatMoney(d decimal.Decimal) string {
 	return fmt.Sprintf("$%s", d.StringFixed(2))
 }
 
-templ DealsPage(deals []view.DealRow) {
-	@layouts.Base("Deals", "/deals") {
+templ DealsPage(pc view.PageContext, deals []view.DealRow) {
+	@layouts.Base(pc) {
 		<div class="max-w-6xl">
 			<div class="flex items-center justify-between mb-6">
 				<h1 class="text-2xl font-semibold text-gray-900">Deals</h1>

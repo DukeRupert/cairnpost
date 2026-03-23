@@ -8,8 +8,8 @@ import (
 	"github.com/dukerupert/cairnpost/web/templates/layouts"
 )
 
-templ DealDetailPage(deal view.DealDetail, activities []view.ActivityRow, tasks []view.TaskRow) {
-	@layouts.Base(deal.Title, "/deals") {
+templ DealDetailPage(pc view.PageContext, deal view.DealDetail, activities []view.ActivityRow, tasks []view.TaskRow) {
+	@layouts.Base(pc) {
 		<div class="max-w-6xl space-y-8">
 			<!-- Back link -->
 			<a href="/deals" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">

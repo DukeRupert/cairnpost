@@ -22,8 +22,8 @@ func contactFormAction(id string) string {
 	return fmt.Sprintf("/contacts/%s", id)
 }
 
-templ ContactFormPage(data view.ContactFormData, errs view.FormErrors, companies []view.SelectOption) {
-	@layouts.Base(contactFormTitle(data.ID), "/contacts") {
+templ ContactFormPage(pc view.PageContext, data view.ContactFormData, errs view.FormErrors, companies []view.SelectOption) {
+	@layouts.Base(pc) {
 		<div class="max-w-2xl">
 			<a href="/contacts" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
 				&larr; Contacts

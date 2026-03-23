@@ -7,8 +7,8 @@ import (
 	"github.com/dukerupert/cairnpost/web/templates/layouts"
 )
 
-templ ContactsPage(contacts []view.ContactRow, search string) {
-	@layouts.Base("Contacts", "/contacts") {
+templ ContactsPage(pc view.PageContext, contacts []view.ContactRow, search string) {
+	@layouts.Base(pc) {
 		<div class="max-w-6xl">
 			<div class="flex items-center justify-between mb-6">
 				<h1 class="text-2xl font-semibold text-gray-900">Contacts</h1>

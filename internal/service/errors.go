@@ -1,6 +1,11 @@
 package service
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+var ErrInvalidCredentials = errors.New("invalid email or password")
 
 type ValidationError struct {
 	Field   string

@@ -20,6 +20,7 @@ type UserRepository interface {
 	GetByEmail(ctx context.Context, orgID uuid.UUID, email string) (model.User, error)
 	List(ctx context.Context, orgID uuid.UUID, filter UserFilter) ([]model.User, error)
 	Update(ctx context.Context, user *model.User) error
+	SetPasswordHash(ctx context.Context, orgID, userID uuid.UUID, hash string) error
 	Delete(ctx context.Context, orgID, id uuid.UUID) error
 }
 
@@ -32,8 +33,8 @@ func NewUserRepository(db *sqlx.DB) UserRepository {
 }
 
 func (r *pgUserRepo) Create(ctx context.Context, u *model.User) error {
-	query := `INSERT INTO users (org_id, name, email, role)
-		VALUES (:org_id, :name, :email, :role)
+	query := `INSERT INTO users (org_id, name, email, role, password_hash)
+		VALUES (:org_id, :name, :email, :role, :password_hash)
 		RETURNING id, created_at`
 	rows, err := r.db.NamedQueryContext(ctx, query, u)
 	if err != nil {
@@ -86,6 +87,20 @@ func (r *pgUserRepo) Update(ctx context.Context, u *model.User) error {
 	query := `UPDATE users SET name = :name, email = :email, role = :role
 		WHERE org_id = :org_id AND id = :id`
 	result, err := r.db.NamedExecContext(ctx, query, u)
+	if err != nil {
+		return translateError(err)
+	}
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+func (r *pgUserRepo) SetPasswordHash(ctx context.Context, orgID, userID uuid.UUID, hash string) error {
+	result, err := r.db.ExecContext(ctx,
+		`UPDATE users SET password_hash = $1 WHERE org_id = $2 AND id = $3`,
+		hash, orgID, userID)
 	if err != nil {
 		return translateError(err)
 	}

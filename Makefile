@@ -1,4 +1,4 @@
-.PHONY: dev build run test migrate-up migrate-down templ tailwind clean
+.PHONY: dev build run test migrate-up migrate-down templ tailwind clean seed-admin
 
 # Development with live reload
 dev:
@@ -38,6 +38,10 @@ migrate-down:
 # Start PostgreSQL via Docker Compose
 db:
 	docker compose up -d db
+
+# Seed admin user (requires NAME, EMAIL, PASSWORD env vars)
+seed-admin:
+	go run ./cmd/seed --name "$(NAME)" --email "$(EMAIL)" --password "$(PASSWORD)"
 
 # Clean build artifacts
 clean:

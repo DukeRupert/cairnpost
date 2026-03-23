@@ -22,8 +22,8 @@ func companyFormAction(id string) string {
 	return fmt.Sprintf("/companies/%s", id)
 }
 
-templ CompanyFormPage(data view.CompanyFormData, errs view.FormErrors) {
-	@layouts.Base(companyFormTitle(data.ID), "/companies") {
+templ CompanyFormPage(pc view.PageContext, data view.CompanyFormData, errs view.FormErrors) {
+	@layouts.Base(pc) {
 		<div class="max-w-2xl">
 			<a href="/companies" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
 				&larr; Companies

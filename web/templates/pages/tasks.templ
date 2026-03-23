@@ -7,8 +7,8 @@ import (
 	"github.com/dukerupert/cairnpost/web/templates/layouts"
 )
 
-templ TasksPage(tasks []view.TaskRow) {
-	@layouts.Base("Tasks", "/tasks") {
+templ TasksPage(pc view.PageContext, tasks []view.TaskRow) {
+	@layouts.Base(pc) {
 		<div class="max-w-6xl">
 			<div class="flex items-center justify-between mb-6">
 				<h1 class="text-2xl font-semibold text-gray-900">Tasks</h1>

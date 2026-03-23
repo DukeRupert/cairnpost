@@ -80,6 +80,13 @@ type CompanyDetail struct {
 	CreatedAt time.Time
 }
 
+// Page context for layout rendering
+type PageContext struct {
+	Title       string
+	CurrentPath string
+	UserName    string
+}
+
 // Form types
 
 type SelectOption struct {

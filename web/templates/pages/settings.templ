@@ -1,9 +1,12 @@
 package pages
 
-import "github.com/dukerupert/cairnpost/web/templates/layouts"
+import (
+	"github.com/dukerupert/cairnpost/internal/view"
+	"github.com/dukerupert/cairnpost/web/templates/layouts"
+)
 
-templ Settings() {
-	@layouts.Base("Settings", "/settings") {
+templ Settings(pc view.PageContext) {
+	@layouts.Base(pc) {
 		<div class="max-w-4xl">
 			<h1 class="text-2xl font-semibold text-gray-900">Settings</h1>
 			<p class="mt-2 text-gray-500">Settings will appear here.</p>

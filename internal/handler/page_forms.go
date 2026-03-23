@@ -15,10 +15,18 @@ import (
 	"github.com/lib/pq"
 )
 
+func formTitle(entity, id string) string {
+	if id == "" {
+		return "New " + entity
+	}
+	return "Edit " + entity
+}
+
 // --- Company forms ---
 
 func (h *PageHandler) CompanyNew(w http.ResponseWriter, r *http.Request) {
-	pages.CompanyFormPage(view.CompanyFormData{}, nil).Render(r.Context(), w)
+	data := view.CompanyFormData{}
+	pages.CompanyFormPage(h.pc(r, "New Company", "/companies"), data, nil).Render(r.Context(), w)
 }
 
 func (h *PageHandler) CompanyCreate(w http.ResponseWriter, r *http.Request) {
@@ -39,7 +47,7 @@ func (h *PageHandler) CompanyCreate(w http.ResponseWriter, r *http.Request) {
 		Notes:   data.Notes,
 	})
 	if err != nil {
-		pages.CompanyFormPage(data, validationErrors(err)).Render(ctx, w)
+		pages.CompanyFormPage(h.pc(r, "New Company", "/companies"), data, validationErrors(err)).Render(ctx, w)
 		return
 	}
 
@@ -68,7 +76,7 @@ func (h *PageHandler) CompanyEdit(w http.ResponseWriter, r *http.Request) {
 		Notes:   company.Notes,
 	}
 
-	pages.CompanyFormPage(data, nil).Render(ctx, w)
+	pages.CompanyFormPage(h.pc(r, "Edit Company", "/companies"), data, nil).Render(ctx, w)
 }
 
 func (h *PageHandler) CompanyUpdate(w http.ResponseWriter, r *http.Request) {
@@ -96,7 +104,7 @@ func (h *PageHandler) CompanyUpdate(w http.ResponseWriter, r *http.Request) {
 		Notes:   &data.Notes,
 	})
 	if err != nil {
-		pages.CompanyFormPage(data, validationErrors(err)).Render(ctx, w)
+		pages.CompanyFormPage(h.pc(r, "Edit Company", "/companies"), data, validationErrors(err)).Render(ctx, w)
 		return
 	}
 
@@ -108,7 +116,7 @@ func (h *PageHandler) CompanyUpdate(w http.ResponseWriter, r *http.Request) {
 func (h *PageHandler) ContactNew(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	companies := h.companyOptions(ctx)
-	pages.ContactFormPage(view.ContactFormData{}, nil, companies).Render(ctx, w)
+	pages.ContactFormPage(h.pc(r, "New Contact", "/contacts"), view.ContactFormData{}, nil, companies).Render(ctx, w)
 }
 
 func (h *PageHandler) ContactCreate(w http.ResponseWriter, r *http.Request) {
@@ -134,7 +142,7 @@ func (h *PageHandler) ContactCreate(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		companies := setSelected(h.companyOptions(ctx), data.CompanyID)
-		pages.ContactFormPage(data, validationErrors(err), companies).Render(ctx, w)
+		pages.ContactFormPage(h.pc(r, "New Contact", "/contacts"), data, validationErrors(err), companies).Render(ctx, w)
 		return
 	}
 
@@ -166,7 +174,7 @@ func (h *PageHandler) ContactEdit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	companies := setSelected(h.companyOptions(ctx), data.CompanyID)
-	pages.ContactFormPage(data, nil, companies).Render(ctx, w)
+	pages.ContactFormPage(h.pc(r, "Edit Contact", "/contacts"), data, nil, companies).Render(ctx, w)
 }
 
 func (h *PageHandler) ContactUpdate(w http.ResponseWriter, r *http.Request) {
@@ -200,7 +208,7 @@ func (h *PageHandler) ContactUpdate(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		companies := setSelected(h.companyOptions(ctx), data.CompanyID)
-		pages.ContactFormPage(data, validationErrors(err), companies).Render(ctx, w)
+		pages.ContactFormPage(h.pc(r, "Edit Contact", "/contacts"), data, validationErrors(err), companies).Render(ctx, w)
 		return
 	}
 
@@ -217,7 +225,7 @@ func (h *PageHandler) DealNew(w http.ResponseWriter, r *http.Request) {
 	contacts := setSelected(h.contactOptions(ctx), data.ContactID)
 	companies := h.companyOptions(ctx)
 	stages := stageOptions()
-	pages.DealFormPage(data, nil, contacts, companies, stages).Render(ctx, w)
+	pages.DealFormPage(h.pc(r, "New Deal", "/deals"), data, nil, contacts, companies, stages).Render(ctx, w)
 }
 
 func (h *PageHandler) DealCreate(w http.ResponseWriter, r *http.Request) {
@@ -238,7 +246,7 @@ func (h *PageHandler) DealCreate(w http.ResponseWriter, r *http.Request) {
 		contacts := setSelected(h.contactOptions(ctx), data.ContactID)
 		companies := setSelected(h.companyOptions(ctx), data.CompanyID)
 		stages := setSelected(stageOptions(), data.Stage)
-		pages.DealFormPage(data, errs, contacts, companies, stages).Render(ctx, w)
+		pages.DealFormPage(h.pc(r, "New Deal", "/deals"), data, errs, contacts, companies, stages).Render(ctx, w)
 		return
 	}
 
@@ -253,7 +261,7 @@ func (h *PageHandler) DealCreate(w http.ResponseWriter, r *http.Request) {
 		contacts := setSelected(h.contactOptions(ctx), data.ContactID)
 		companies := setSelected(h.companyOptions(ctx), data.CompanyID)
 		stages := setSelected(stageOptions(), data.Stage)
-		pages.DealFormPage(data, validationErrors(err), contacts, companies, stages).Render(ctx, w)
+		pages.DealFormPage(h.pc(r, "New Deal", "/deals"), data, validationErrors(err), contacts, companies, stages).Render(ctx, w)
 		return
 	}
 
@@ -286,7 +294,7 @@ func (h *PageHandler) DealEdit(w http.ResponseWriter, r *http.Request) {
 	contacts := setSelected(h.contactOptions(ctx), data.ContactID)
 	companies := setSelected(h.companyOptions(ctx), data.CompanyID)
 	stages := setSelected(stageOptions(), data.Stage)
-	pages.DealFormPage(data, nil, contacts, companies, stages).Render(ctx, w)
+	pages.DealFormPage(h.pc(r, "Edit Deal", "/deals"), data, nil, contacts, companies, stages).Render(ctx, w)
 }
 
 func (h *PageHandler) DealUpdate(w http.ResponseWriter, r *http.Request) {
@@ -321,7 +329,7 @@ func (h *PageHandler) DealUpdate(w http.ResponseWriter, r *http.Request) {
 		contacts := setSelected(h.contactOptions(ctx), data.ContactID)
 		companies := setSelected(h.companyOptions(ctx), data.CompanyID)
 		stages := setSelected(stageOptions(), data.Stage)
-		pages.DealFormPage(data, validationErrors(err), contacts, companies, stages).Render(ctx, w)
+		pages.DealFormPage(h.pc(r, "Edit Deal", "/deals"), data, validationErrors(err), contacts, companies, stages).Render(ctx, w)
 		return
 	}
 
@@ -335,12 +343,12 @@ func (h *PageHandler) TaskNew(w http.ResponseWriter, r *http.Request) {
 	data := view.TaskFormData{
 		ContactID:  r.URL.Query().Get("contact_id"),
 		DealID:     r.URL.Query().Get("deal_id"),
-		AssignedTo: h.defaultUserID.String(),
+		AssignedTo: h.currentUser(r).ID.String(),
 	}
 	users := setSelected(h.userOptions(ctx), data.AssignedTo)
 	contacts := setSelected(h.contactOptionsWithNone(ctx), data.ContactID)
 	deals := setSelected(h.dealOptions(ctx), data.DealID)
-	pages.TaskFormPage(data, nil, users, contacts, deals).Render(ctx, w)
+	pages.TaskFormPage(h.pc(r, "New Task", "/tasks"), data, nil, users, contacts, deals).Render(ctx, w)
 }
 
 func (h *PageHandler) TaskCreate(w http.ResponseWriter, r *http.Request) {
@@ -361,7 +369,7 @@ func (h *PageHandler) TaskCreate(w http.ResponseWriter, r *http.Request) {
 		users := setSelected(h.userOptions(ctx), data.AssignedTo)
 		contacts := setSelected(h.contactOptionsWithNone(ctx), data.ContactID)
 		deals := setSelected(h.dealOptions(ctx), data.DealID)
-		pages.TaskFormPage(data, errs, users, contacts, deals).Render(ctx, w)
+		pages.TaskFormPage(h.pc(r, "New Task", "/tasks"), data, errs, users, contacts, deals).Render(ctx, w)
 		return
 	}
 
@@ -383,7 +391,7 @@ func (h *PageHandler) TaskCreate(w http.ResponseWriter, r *http.Request) {
 		users := setSelected(h.userOptions(ctx), data.AssignedTo)
 		contacts := setSelected(h.contactOptionsWithNone(ctx), data.ContactID)
 		deals := setSelected(h.dealOptions(ctx), data.DealID)
-		pages.TaskFormPage(data, validationErrors(err), users, contacts, deals).Render(ctx, w)
+		pages.TaskFormPage(h.pc(r, "New Task", "/tasks"), data, validationErrors(err), users, contacts, deals).Render(ctx, w)
 		return
 	}
 
@@ -421,7 +429,7 @@ func (h *PageHandler) TaskEdit(w http.ResponseWriter, r *http.Request) {
 	users := setSelected(h.userOptions(ctx), data.AssignedTo)
 	contacts := setSelected(h.contactOptionsWithNone(ctx), data.ContactID)
 	deals := setSelected(h.dealOptions(ctx), data.DealID)
-	pages.TaskFormPage(data, nil, users, contacts, deals).Render(ctx, w)
+	pages.TaskFormPage(h.pc(r, "Edit Task", "/tasks"), data, nil, users, contacts, deals).Render(ctx, w)
 }
 
 func (h *PageHandler) TaskUpdate(w http.ResponseWriter, r *http.Request) {
@@ -462,7 +470,7 @@ func (h *PageHandler) TaskUpdate(w http.ResponseWriter, r *http.Request) {
 		users := setSelected(h.userOptions(ctx), data.AssignedTo)
 		contacts := setSelected(h.contactOptionsWithNone(ctx), data.ContactID)
 		deals := setSelected(h.dealOptions(ctx), data.DealID)
-		pages.TaskFormPage(data, validationErrors(err), users, contacts, deals).Render(ctx, w)
+		pages.TaskFormPage(h.pc(r, "Edit Task", "/tasks"), data, validationErrors(err), users, contacts, deals).Render(ctx, w)
 		return
 	}
 

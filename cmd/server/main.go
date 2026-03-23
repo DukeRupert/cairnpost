@@ -32,6 +32,7 @@ func main() {
 	dealRepo := repository.NewDealRepository(db)
 	activityRepo := repository.NewActivityRepository(db)
 	taskRepo := repository.NewTaskRepository(db)
+	sessionRepo := repository.NewSessionRepository(db)
 
 	// Services
 	orgSvc := service.NewOrgService(orgRepo)
@@ -42,7 +43,16 @@ func main() {
 	dealSvc := service.NewDealService(dealRepo, contactRepo)
 	taskSvc := service.NewTaskService(taskRepo, userRepo)
 
-	// Handlers
+	// Resolve org at startup (single-org v1)
+	org, err := orgRepo.GetBySlug(context.Background(), cfg.OrgSlug)
+	if err != nil {
+		log.Fatalf("resolving org slug %q: %v", cfg.OrgSlug, err)
+	}
+	log.Printf("Resolved org: %s (id=%s)", org.Name, org.ID)
+
+	secureCookie := cfg.Environment != "development"
+
+	// API handlers
 	orgH := handler.NewOrgHandler(orgSvc)
 	userH := handler.NewUserHandler(userSvc)
 	companyH := handler.NewCompanyHandler(companySvc)
@@ -51,26 +61,12 @@ func main() {
 	dealH := handler.NewDealHandler(dealSvc)
 	taskH := handler.NewTaskHandler(taskSvc)
 
-	// Resolve org at startup (single-org v1)
-	org, err := orgRepo.GetBySlug(context.Background(), cfg.OrgSlug)
-	if err != nil {
-		log.Fatalf("resolving org slug %q: %v", cfg.OrgSlug, err)
-	}
-	log.Printf("Resolved org: %s (id=%s)", org.Name, org.ID)
+	// Auth handler
+	authH := handler.NewAuthHandler(org.ID, userSvc, sessionRepo, secureCookie)
 
-	// Resolve default user for activity creation (no auth in v1)
-	users, err := userRepo.List(context.Background(), org.ID, repository.UserFilter{
-		Pagination: repository.Pagination{Limit: 1},
-	})
-	if err != nil || len(users) == 0 {
-		log.Fatalf("no users in org %q — create at least one user via the API", cfg.OrgSlug)
-	}
-	defaultUserID := users[0].ID
-	log.Printf("Default user: %s (id=%s)", users[0].Name, defaultUserID)
-
-	// Page handler (HTML routes)
+	// Page handler (HTML routes — protected by auth middleware)
 	pageH := handler.NewPageHandler(
-		org.ID, defaultUserID,
+		org.ID,
 		contactSvc, companySvc, dealSvc, taskSvc, activitySvc,
 		contactRepo, userRepo, companyRepo,
 	)
@@ -83,16 +79,22 @@ func main() {
 		w.Write([]byte("ok"))
 	})
 
-	// Static files
+	// Static files (public)
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
 
-	// HTML pages
-	pageH.RegisterRoutes(mux)
+	// Auth routes (public)
+	authH.RegisterRoutes(mux)
 
-	// Org routes (not behind org middleware)
+	// Protected HTML pages
+	protectedMux := http.NewServeMux()
+	pageH.RegisterRoutes(protectedMux)
+	authMiddleware := handler.RequireAuth(sessionRepo, userRepo, org.ID, secureCookie)
+	mux.Handle("/", authMiddleware(protectedMux))
+
+	// Org routes (API, not behind auth)
 	orgH.RegisterRoutes(mux)
 
-	// Org-scoped routes
+	// Org-scoped API routes (not behind auth for v1)
 	prefix := "/api/v1/{org}"
 	companyH.RegisterRoutes(mux, prefix)
 	userH.RegisterRoutes(mux, prefix)
@@ -101,7 +103,7 @@ func main() {
 	dealH.RegisterRoutes(mux, prefix)
 	taskH.RegisterRoutes(mux, prefix)
 
-	// Wrap with org resolver middleware
+	// Wrap with org resolver middleware (for API routes)
 	wrapped := handler.OrgResolver(orgRepo)(mux)
 
 	log.Printf("CairnPost starting on :%s (env=%s)", cfg.Port, cfg.Environment)

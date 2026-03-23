@@ -3,15 +3,17 @@ package service
 import (
 	"context"
 
+	"github.com/dukerupert/cairnpost/internal/auth"
 	"github.com/dukerupert/cairnpost/internal/model"
 	"github.com/dukerupert/cairnpost/internal/repository"
 	"github.com/google/uuid"
 )
 
 type UserCreateInput struct {
-	Name  string     `json:"name"`
-	Email string     `json:"email"`
-	Role  model.Role `json:"role"`
+	Name     string     `json:"name"`
+	Email    string     `json:"email"`
+	Role     model.Role `json:"role"`
+	Password string     `json:"password,omitempty"`
 }
 
 type UserUpdateInput struct {
@@ -25,6 +27,8 @@ type UserService interface {
 	GetByID(ctx context.Context, orgID, id uuid.UUID) (model.User, error)
 	List(ctx context.Context, orgID uuid.UUID, filter repository.UserFilter) ([]model.User, error)
 	Update(ctx context.Context, orgID, id uuid.UUID, input UserUpdateInput) (model.User, error)
+	Authenticate(ctx context.Context, orgID uuid.UUID, email, password string) (model.User, error)
+	SetPassword(ctx context.Context, orgID, userID uuid.UUID, password string) error
 	Delete(ctx context.Context, orgID, id uuid.UUID) error
 }
 
@@ -53,6 +57,15 @@ func (s *userService) Create(ctx context.Context, orgID uuid.UUID, input UserCre
 		Email: input.Email,
 		Role:  input.Role,
 	}
+
+	if input.Password != "" {
+		hash, err := auth.HashPassword(input.Password)
+		if err != nil {
+			return model.User{}, err
+		}
+		u.PasswordHash = &hash
+	}
+
 	if err := s.users.Create(ctx, &u); err != nil {
 		return model.User{}, err
 	}
@@ -96,6 +109,28 @@ func (s *userService) Update(ctx context.Context, orgID, id uuid.UUID, input Use
 		return model.User{}, err
 	}
 	return u, nil
+}
+
+func (s *userService) Authenticate(ctx context.Context, orgID uuid.UUID, email, password string) (model.User, error) {
+	user, err := s.users.GetByEmail(ctx, orgID, email)
+	if err != nil {
+		return model.User{}, ErrInvalidCredentials
+	}
+	if user.PasswordHash == nil {
+		return model.User{}, ErrInvalidCredentials
+	}
+	if err := auth.CheckPassword(*user.PasswordHash, password); err != nil {
+		return model.User{}, ErrInvalidCredentials
+	}
+	return user, nil
+}
+
+func (s *userService) SetPassword(ctx context.Context, orgID, userID uuid.UUID, password string) error {
+	hash, err := auth.HashPassword(password)
+	if err != nil {
+		return err
+	}
+	return s.users.SetPasswordHash(ctx, orgID, userID, hash)
 }
 
 func (s *userService) Delete(ctx context.Context, orgID, id uuid.UUID) error {

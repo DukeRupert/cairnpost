@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/dukerupert/cairnpost/internal/auth"
 	"github.com/dukerupert/cairnpost/internal/model"
 	"github.com/dukerupert/cairnpost/internal/repository"
 	"github.com/dukerupert/cairnpost/internal/service"
@@ -16,21 +17,19 @@ import (
 )
 
 type PageHandler struct {
-	orgID         uuid.UUID
-	defaultUserID uuid.UUID
-	contacts      service.ContactService
-	companies     service.CompanyService
-	deals         service.DealService
-	tasks         service.TaskService
-	activities    service.ActivityService
-	contactRepo   repository.ContactRepository
-	userRepo      repository.UserRepository
-	companyRepo   repository.CompanyRepository
+	orgID       uuid.UUID
+	contacts    service.ContactService
+	companies   service.CompanyService
+	deals       service.DealService
+	tasks       service.TaskService
+	activities  service.ActivityService
+	contactRepo repository.ContactRepository
+	userRepo    repository.UserRepository
+	companyRepo repository.CompanyRepository
 }
 
 func NewPageHandler(
 	orgID uuid.UUID,
-	defaultUserID uuid.UUID,
 	contacts service.ContactService,
 	companies service.CompanyService,
 	deals service.DealService,
@@ -41,16 +40,15 @@ func NewPageHandler(
 	companyRepo repository.CompanyRepository,
 ) *PageHandler {
 	return &PageHandler{
-		orgID:         orgID,
-		defaultUserID: defaultUserID,
-		contacts:      contacts,
-		companies:     companies,
-		deals:         deals,
-		tasks:         tasks,
-		activities:    activities,
-		contactRepo:   contactRepo,
-		userRepo:      userRepo,
-		companyRepo:   companyRepo,
+		orgID:       orgID,
+		contacts:    contacts,
+		companies:   companies,
+		deals:       deals,
+		tasks:       tasks,
+		activities:  activities,
+		contactRepo: contactRepo,
+		userRepo:    userRepo,
+		companyRepo: companyRepo,
 	}
 }
 
@@ -89,6 +87,20 @@ func (h *PageHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /settings", h.Settings)
 }
 
+// currentUser returns the authenticated user from the request context.
+func (h *PageHandler) currentUser(r *http.Request) model.User {
+	return auth.MustUserFromContext(r.Context())
+}
+
+// pc builds a PageContext for the given request.
+func (h *PageHandler) pc(r *http.Request, title, currentPath string) view.PageContext {
+	return view.PageContext{
+		Title:       title,
+		CurrentPath: currentPath,
+		UserName:    h.currentUser(r).Name,
+	}
+}
+
 // --- List pages ---
 
 func (h *PageHandler) Today(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +129,7 @@ func (h *PageHandler) Today(w http.ResponseWriter, r *http.Request) {
 	overdue := h.taskRows(ctx, overdueModels)
 	dueToday := h.taskRows(ctx, dueTodayModels)
 
-	pages.TodayPage(overdue, dueToday).Render(ctx, w)
+	pages.TodayPage(h.pc(r, "Today", "/"), overdue, dueToday).Render(ctx, w)
 }
 
 func (h *PageHandler) Contacts(w http.ResponseWriter, r *http.Request) {
@@ -143,7 +155,7 @@ func (h *PageHandler) Contacts(w http.ResponseWriter, r *http.Request) {
 		pages.ContactsTable(rows, search).Render(ctx, w)
 		return
 	}
-	pages.ContactsPage(rows, search).Render(ctx, w)
+	pages.ContactsPage(h.pc(r, "Contacts", "/contacts"), rows, search).Render(ctx, w)
 }
 
 func (h *PageHandler) Companies(w http.ResponseWriter, r *http.Request) {
@@ -177,7 +189,7 @@ func (h *PageHandler) Companies(w http.ResponseWriter, r *http.Request) {
 		pages.CompaniesTable(rows, search).Render(ctx, w)
 		return
 	}
-	pages.CompaniesPage(rows, search).Render(ctx, w)
+	pages.CompaniesPage(h.pc(r, "Companies", "/companies"), rows, search).Render(ctx, w)
 }
 
 func (h *PageHandler) Deals(w http.ResponseWriter, r *http.Request) {
@@ -194,7 +206,7 @@ func (h *PageHandler) Deals(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows := h.dealRows(ctx, models)
-	pages.DealsPage(rows).Render(ctx, w)
+	pages.DealsPage(h.pc(r, "Deals", "/deals"), rows).Render(ctx, w)
 }
 
 func (h *PageHandler) Tasks(w http.ResponseWriter, r *http.Request) {
@@ -211,11 +223,11 @@ func (h *PageHandler) Tasks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows := h.taskRows(ctx, models)
-	pages.TasksPage(rows).Render(ctx, w)
+	pages.TasksPage(h.pc(r, "Tasks", "/tasks"), rows).Render(ctx, w)
 }
 
 func (h *PageHandler) Settings(w http.ResponseWriter, r *http.Request) {
-	pages.Settings().Render(r.Context(), w)
+	pages.Settings(h.pc(r, "Settings", "/settings")).Render(r.Context(), w)
 }
 
 // --- Detail pages ---
@@ -262,7 +274,11 @@ func (h *PageHandler) ContactDetail(w http.ResponseWriter, r *http.Request) {
 	taskModels, _ := h.tasks.List(ctx, h.orgID, repository.TaskFilter{ContactID: &id})
 	tasks := h.taskRows(ctx, taskModels)
 
-	pages.ContactDetailPage(detail, activities, deals, tasks).Render(ctx, w)
+	name := contact.FirstName
+	if contact.LastName != "" {
+		name += " " + contact.LastName
+	}
+	pages.ContactDetailPage(h.pc(r, name, "/contacts"), detail, activities, deals, tasks).Render(ctx, w)
 }
 
 func (h *PageHandler) DealDetail(w http.ResponseWriter, r *http.Request) {
@@ -313,7 +329,7 @@ func (h *PageHandler) DealDetail(w http.ResponseWriter, r *http.Request) {
 	taskModels, _ := h.tasks.List(ctx, h.orgID, repository.TaskFilter{DealID: &id})
 	tasks := h.taskRows(ctx, taskModels)
 
-	pages.DealDetailPage(detail, activities, tasks).Render(ctx, w)
+	pages.DealDetailPage(h.pc(r, deal.Title, "/deals"), detail, activities, tasks).Render(ctx, w)
 }
 
 func (h *PageHandler) CompanyDetail(w http.ResponseWriter, r *http.Request) {
@@ -345,7 +361,7 @@ func (h *PageHandler) CompanyDetail(w http.ResponseWriter, r *http.Request) {
 	dealModels, _ := h.deals.List(ctx, h.orgID, repository.DealFilter{CompanyID: &id})
 	deals := h.dealRows(ctx, dealModels)
 
-	pages.CompanyDetailPage(detail, contacts, deals).Render(ctx, w)
+	pages.CompanyDetailPage(h.pc(r, company.Name, "/companies"), detail, contacts, deals).Render(ctx, w)
 }
 
 // --- Activity POST handlers ---
@@ -363,7 +379,7 @@ func (h *PageHandler) CreateContactActivity(w http.ResponseWriter, r *http.Reque
 		Type:      model.ActivityType(r.FormValue("type")),
 		Body:      r.FormValue("body"),
 		ContactID: contactID,
-		UserID:    h.defaultUserID,
+		UserID:    h.currentUser(r).ID,
 	})
 	if err != nil {
 		log.Printf("create contact activity: %v", err)
@@ -394,7 +410,7 @@ func (h *PageHandler) CreateDealActivity(w http.ResponseWriter, r *http.Request)
 		Body:      r.FormValue("body"),
 		ContactID: deal.ContactID,
 		DealID:    &dealID,
-		UserID:    h.defaultUserID,
+		UserID:    h.currentUser(r).ID,
 	})
 	if err != nil {
 		log.Printf("create deal activity: %v", err)
