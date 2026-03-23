@@ -50,6 +50,9 @@ func main() {
 	dealH := handler.NewDealHandler(dealSvc)
 	taskH := handler.NewTaskHandler(taskSvc)
 
+	// Page handler (HTML routes)
+	pageH := handler.NewPageHandler(cfg.OrgSlug)
+
 	// Routes
 	mux := http.NewServeMux()
 
@@ -57,6 +60,12 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("ok"))
 	})
+
+	// Static files
+	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
+
+	// HTML pages
+	pageH.RegisterRoutes(mux)
 
 	// Org routes (not behind org middleware)
 	orgH.RegisterRoutes(mux)

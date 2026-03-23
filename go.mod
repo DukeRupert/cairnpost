@@ -8,3 +8,5 @@ require (
 	github.com/lib/pq v1.12.0
 	github.com/shopspring/decimal v1.4.0
 )
+
+require github.com/a-h/templ v0.3.1001 // indirect

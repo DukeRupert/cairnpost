@@ -1,0 +1,28 @@
+package layouts
+
+import "github.com/dukerupert/cairnpost/web/templates/components"
+
+templ Base(title string, currentPath string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>{ title } - CairnPost</title>
+			<link rel="stylesheet" href="/static/css/output.css"/>
+			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+			<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+			<style>
+				[x-cloak] { display: none !important; }
+			</style>
+		</head>
+		<body class="bg-gray-50 min-h-screen">
+			<div class="flex min-h-screen">
+				@components.Sidebar(currentPath)
+				<main class="flex-1 p-6 lg:p-8">
+					{ children... }
+				</main>
+			</div>
+		</body>
+	</html>
+}
