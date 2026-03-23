@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: cairnpost
+      POSTGRES_PASSWORD: cairnpost
+      POSTGRES_DB: cairnpost
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+      DATABASE_URL: postgres://cairnpost:cairnpost@db:5432/cairnpost?sslmode=disable
+      ENVIRONMENT: development
+    depends_on:
+      db:
+        condition: service_started
+
+volumes:
+  pgdata:

@@ -1,0 +1,16 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "templ generate && go build -o ./tmp/cairnpost ./cmd/server"
+  bin = "./tmp/cairnpost"
+  delay = 1000
+  exclude_dir = ["tmp", "node_modules", "web/static"]
+  exclude_regex = ["_templ\\.go$"]
+  include_ext = ["go", "templ", "sql"]
+  kill_delay = "0s"
+  send_interrupt = false
+  stop_on_error = true
+
+[misc]
+  clean_on_exit = true
