@@ -11,5 +11,6 @@ require (
 
 require (
 	github.com/a-h/templ v0.3.1001 // indirect
+	github.com/magefile/mage v1.16.1 // indirect
 	golang.org/x/crypto v0.49.0 // indirect
 )

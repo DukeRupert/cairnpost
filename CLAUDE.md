@@ -6,19 +6,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A multi-tenant CRM for small service businesses (contractors, consultants, tradespeople). Part of the Firefly Software product suite. Go backend with htmx + templ for server-rendered UI and Svelte islands for high-interactivity components (pipeline kanban).
 
-## Commands
+## Commands (Mage)
+
+Build tool is [Mage](https://magefile.org/) (`magefile.go`). Run `mage -l` to list all targets.
 
 ```bash
-make dev              # Live reload via Air (runs templ generate + go build)
-make build            # Build binary to bin/cairnpost
-make test             # Run all tests: go test ./...
+mage dev              # Live reload via Air (runs templ generate + go build)
+mage build            # Build binary to bin/cairnpost (runs templ generate first)
+mage run              # Build and run the server
+mage test             # Run all tests: go test ./...
+mage check            # Generate + lint + test in sequence
 go test ./internal/database/...  # Run tests for a single package
-make db               # Start PostgreSQL via Docker Compose
-make migrate-up       # Run migrations (requires DATABASE_URL env var and golang-migrate CLI)
-make migrate-down     # Roll back one migration
-make templ            # Generate templ files
-make tailwind         # Build Tailwind CSS
-make tailwind-watch   # Watch mode for Tailwind CSS
+
+mage db:up            # Start PostgreSQL via Docker Compose
+mage db:down          # Stop the database
+mage migrate:up       # Run migrations (requires DATABASE_URL env var)
+mage migrate:down     # Roll back one migration
+
+mage templ            # Generate templ files
+mage tailwind         # Build Tailwind CSS
+mage tailwindWatch    # Watch mode for Tailwind CSS
+mage generate         # Run all code generation (templ + tailwind)
+
+mage seed:demo        # Seed full demo dataset (requires EMAIL, PASSWORD env vars)
+mage seed:admin       # Create admin user (requires NAME, EMAIL, PASSWORD env vars)
+mage clean            # Remove build artifacts
+mage lint             # Run go vet
 ```
 
 ## Architecture
