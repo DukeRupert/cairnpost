@@ -1,0 +1,94 @@
+package pages
+
+import (
+	"fmt"
+
+	"github.com/dukerupert/cairnpost/internal/view"
+	"github.com/dukerupert/cairnpost/web/templates/components"
+	"github.com/dukerupert/cairnpost/web/templates/layouts"
+)
+
+func contactFullName(c view.ContactDetail) string {
+	name := c.FirstName
+	if c.LastName != "" {
+		name += " " + c.LastName
+	}
+	return name
+}
+
+func contactDetailURL(id fmt.Stringer) string {
+	return fmt.Sprintf("/contacts/%s", id.String())
+}
+
+templ ContactDetailPage(contact view.ContactDetail, activities []view.ActivityRow, deals []view.DealRow, tasks []view.TaskRow) {
+	@layouts.Base(contactFullName(contact), "/contacts") {
+		<div class="max-w-6xl space-y-8">
+			<!-- Back link -->
+			<a href="/contacts" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
+				&larr; Contacts
+			</a>
+
+			<!-- Info card -->
+			<div class="rounded-lg border border-gray-200 bg-white p-6">
+				<h1 class="text-2xl font-semibold text-gray-900">{ contactFullName(contact) }</h1>
+				<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+					if contact.Email != "" {
+						<div>
+							<dt class="text-xs font-medium uppercase text-gray-500">Email</dt>
+							<dd class="mt-1 text-sm text-gray-900">{ contact.Email }</dd>
+						</div>
+					}
+					if contact.Phone != "" {
+						<div>
+							<dt class="text-xs font-medium uppercase text-gray-500">Phone</dt>
+							<dd class="mt-1 text-sm text-gray-900">{ contact.Phone }</dd>
+						</div>
+					}
+					if contact.CompanyName != "" {
+						<div>
+							<dt class="text-xs font-medium uppercase text-gray-500">Company</dt>
+							<dd class="mt-1 text-sm text-gray-900">
+								if contact.CompanyID != nil {
+									<a href={ templ.SafeURL(fmt.Sprintf("/companies/%s", contact.CompanyID.String())) } class="text-brand hover:underline">{ contact.CompanyName }</a>
+								} else {
+									{ contact.CompanyName }
+								}
+							</dd>
+						</div>
+					}
+				</div>
+				if len(contact.Tags) > 0 {
+					<div class="mt-4 flex flex-wrap gap-1">
+						for _, tag := range contact.Tags {
+							<span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{ tag }</span>
+						}
+					</div>
+				}
+			</div>
+
+			<!-- Activity timeline -->
+			<section>
+				<h2 class="mb-3 text-lg font-medium text-gray-700">Activity</h2>
+				<div id="activity-timeline">
+					@components.ActivityTimeline(activities, contact.ID, nil)
+				</div>
+			</section>
+
+			<!-- Linked deals -->
+			if len(deals) > 0 {
+				<section>
+					<h2 class="mb-3 text-lg font-medium text-gray-700">Deals</h2>
+					@DealsTable(deals)
+				</section>
+			}
+
+			<!-- Linked tasks -->
+			if len(tasks) > 0 {
+				<section>
+					<h2 class="mb-3 text-lg font-medium text-gray-700">Tasks</h2>
+					@TasksTable(tasks)
+				</section>
+			}
+		</div>
+	}
+}

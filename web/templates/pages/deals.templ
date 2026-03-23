@@ -42,7 +42,9 @@ templ DealsTable(deals []view.DealRow) {
 				<tbody class="divide-y divide-gray-200 bg-white">
 					for _, d := range deals {
 						<tr class="hover:bg-gray-50">
-							<td class="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">{ d.Title }</td>
+							<td class="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
+								<a href={ templ.SafeURL(fmt.Sprintf("/deals/%s", d.ID.String())) } class="text-brand hover:underline">{ d.Title }</a>
+							</td>
 							<td class="whitespace-nowrap px-4 py-3 text-sm">
 								@stageBadge(d.Stage)
 							</td>

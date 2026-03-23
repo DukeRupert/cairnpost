@@ -58,8 +58,22 @@ func main() {
 	}
 	log.Printf("Resolved org: %s (id=%s)", org.Name, org.ID)
 
+	// Resolve default user for activity creation (no auth in v1)
+	users, err := userRepo.List(context.Background(), org.ID, repository.UserFilter{
+		Pagination: repository.Pagination{Limit: 1},
+	})
+	if err != nil || len(users) == 0 {
+		log.Fatalf("no users in org %q — create at least one user via the API", cfg.OrgSlug)
+	}
+	defaultUserID := users[0].ID
+	log.Printf("Default user: %s (id=%s)", users[0].Name, defaultUserID)
+
 	// Page handler (HTML routes)
-	pageH := handler.NewPageHandler(org.ID, contactSvc, companySvc, dealSvc, taskSvc, contactRepo, userRepo)
+	pageH := handler.NewPageHandler(
+		org.ID, defaultUserID,
+		contactSvc, companySvc, dealSvc, taskSvc, activitySvc,
+		contactRepo, userRepo, companyRepo,
+	)
 
 	// Routes
 	mux := http.NewServeMux()

@@ -1,6 +1,8 @@
 package pages
 
 import (
+	"fmt"
+
 	"github.com/dukerupert/cairnpost/internal/view"
 	"github.com/dukerupert/cairnpost/web/templates/layouts"
 )
@@ -53,7 +55,9 @@ templ CompaniesTable(companies []view.CompanyRow, search string) {
 				<tbody class="divide-y divide-gray-200 bg-white">
 					for _, c := range companies {
 						<tr class="hover:bg-gray-50">
-							<td class="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">{ c.Name }</td>
+							<td class="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
+								<a href={ templ.SafeURL(fmt.Sprintf("/companies/%s", c.ID.String())) } class="text-brand hover:underline">{ c.Name }</a>
+							</td>
 							<td class="whitespace-nowrap px-4 py-3 text-sm text-gray-500">{ c.Website }</td>
 							<td class="whitespace-nowrap px-4 py-3 text-sm text-gray-500">{ c.Address }</td>
 						</tr>

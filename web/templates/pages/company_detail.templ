@@ -1,0 +1,58 @@
+package pages
+
+import (
+	"github.com/dukerupert/cairnpost/internal/view"
+	"github.com/dukerupert/cairnpost/web/templates/layouts"
+)
+
+templ CompanyDetailPage(company view.CompanyDetail, contacts []view.ContactRow, deals []view.DealRow) {
+	@layouts.Base(company.Name, "/companies") {
+		<div class="max-w-6xl space-y-8">
+			<!-- Back link -->
+			<a href="/companies" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
+				&larr; Companies
+			</a>
+
+			<!-- Info card -->
+			<div class="rounded-lg border border-gray-200 bg-white p-6">
+				<h1 class="text-2xl font-semibold text-gray-900">{ company.Name }</h1>
+				<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+					if company.Website != "" {
+						<div>
+							<dt class="text-xs font-medium uppercase text-gray-500">Website</dt>
+							<dd class="mt-1 text-sm text-gray-900">{ company.Website }</dd>
+						</div>
+					}
+					if company.Address != "" {
+						<div>
+							<dt class="text-xs font-medium uppercase text-gray-500">Address</dt>
+							<dd class="mt-1 text-sm text-gray-900">{ company.Address }</dd>
+						</div>
+					}
+				</div>
+				if company.Notes != "" {
+					<div class="mt-4">
+						<dt class="text-xs font-medium uppercase text-gray-500">Notes</dt>
+						<dd class="mt-1 text-sm text-gray-700">{ company.Notes }</dd>
+					</div>
+				}
+			</div>
+
+			<!-- Linked contacts -->
+			if len(contacts) > 0 {
+				<section>
+					<h2 class="mb-3 text-lg font-medium text-gray-700">Contacts</h2>
+					@ContactsTable(contacts, "")
+				</section>
+			}
+
+			<!-- Linked deals -->
+			if len(deals) > 0 {
+				<section>
+					<h2 class="mb-3 text-lg font-medium text-gray-700">Deals</h2>
+					@DealsTable(deals)
+				</section>
+			}
+		</div>
+	}
+}
