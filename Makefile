@@ -43,6 +43,10 @@ db:
 seed-admin:
 	go run ./cmd/seed --name "$(NAME)" --email "$(EMAIL)" --password "$(PASSWORD)"
 
+# Seed full demo dataset (requires EMAIL, PASSWORD env vars)
+seed-demo:
+	go run ./cmd/seed --demo --email "$(EMAIL)" --password "$(PASSWORD)"
+
 # Clean build artifacts
 clean:
 	rm -rf bin/ tmp/
