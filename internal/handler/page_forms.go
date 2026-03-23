@@ -477,6 +477,64 @@ func (h *PageHandler) TaskUpdate(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/tasks", http.StatusSeeOther)
 }
 
+// --- Delete handlers ---
+
+func (h *PageHandler) ContactDelete(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	if err := h.contacts.Delete(r.Context(), h.orgID, id); err != nil {
+		log.Printf("contact delete: %v", err)
+		http.Error(w, "failed to delete contact", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/contacts", http.StatusSeeOther)
+}
+
+func (h *PageHandler) CompanyDelete(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	if err := h.companies.Delete(r.Context(), h.orgID, id); err != nil {
+		log.Printf("company delete: %v", err)
+		http.Error(w, "failed to delete company", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/companies", http.StatusSeeOther)
+}
+
+func (h *PageHandler) DealDelete(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	if err := h.deals.Delete(r.Context(), h.orgID, id); err != nil {
+		log.Printf("deal delete: %v", err)
+		http.Error(w, "failed to delete deal", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/deals", http.StatusSeeOther)
+}
+
+func (h *PageHandler) TaskDelete(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	if err := h.tasks.Delete(r.Context(), h.orgID, id); err != nil {
+		log.Printf("task delete: %v", err)
+		http.Error(w, "failed to delete task", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/tasks", http.StatusSeeOther)
+}
+
 // contactOptionsWithNone adds a "None" option at the top for optional contact fields.
 func (h *PageHandler) contactOptionsWithNone(ctx context.Context) []view.SelectOption {
 	opts := h.contactOptions(ctx)

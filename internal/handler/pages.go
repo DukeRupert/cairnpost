@@ -61,6 +61,7 @@ func (h *PageHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /contacts/{id}", h.ContactDetail)
 	mux.HandleFunc("GET /contacts/{id}/edit", h.ContactEdit)
 	mux.HandleFunc("POST /contacts/{id}", h.ContactUpdate)
+	mux.HandleFunc("POST /contacts/{id}/delete", h.ContactDelete)
 	mux.HandleFunc("POST /contacts/{id}/activities", h.CreateContactActivity)
 
 	mux.HandleFunc("GET /companies", h.Companies)
@@ -69,6 +70,7 @@ func (h *PageHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /companies/{id}", h.CompanyDetail)
 	mux.HandleFunc("GET /companies/{id}/edit", h.CompanyEdit)
 	mux.HandleFunc("POST /companies/{id}", h.CompanyUpdate)
+	mux.HandleFunc("POST /companies/{id}/delete", h.CompanyDelete)
 
 	mux.HandleFunc("GET /deals", h.Deals)
 	mux.HandleFunc("GET /deals/new", h.DealNew)
@@ -76,6 +78,7 @@ func (h *PageHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /deals/{id}", h.DealDetail)
 	mux.HandleFunc("GET /deals/{id}/edit", h.DealEdit)
 	mux.HandleFunc("POST /deals/{id}", h.DealUpdate)
+	mux.HandleFunc("POST /deals/{id}/delete", h.DealDelete)
 	mux.HandleFunc("POST /deals/{id}/activities", h.CreateDealActivity)
 
 	mux.HandleFunc("GET /tasks", h.Tasks)
@@ -83,6 +86,7 @@ func (h *PageHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /tasks", h.TaskCreate)
 	mux.HandleFunc("GET /tasks/{id}/edit", h.TaskEdit)
 	mux.HandleFunc("POST /tasks/{id}", h.TaskUpdate)
+	mux.HandleFunc("POST /tasks/{id}/delete", h.TaskDelete)
 
 	mux.HandleFunc("GET /settings", h.Settings)
 }

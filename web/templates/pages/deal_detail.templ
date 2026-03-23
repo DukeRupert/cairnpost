@@ -23,7 +23,12 @@ templ DealDetailPage(pc view.PageContext, deal view.DealDetail, activities []vie
 						<h1 class="text-2xl font-semibold text-gray-900">{ deal.Title }</h1>
 						@stageBadge(deal.Stage)
 					</div>
-					<a href={ templ.SafeURL(fmt.Sprintf("/deals/%s/edit", deal.ID.String())) } class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors">Edit</a>
+					<div class="flex items-center gap-2">
+						<a href={ templ.SafeURL(fmt.Sprintf("/deals/%s/edit", deal.ID.String())) } class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors">Edit</a>
+						<form method="POST" action={ templ.SafeURL(fmt.Sprintf("/deals/%s/delete", deal.ID.String())) } onsubmit="return confirm('Delete this deal? All related activities and tasks will also be deleted. This cannot be undone.')">
+							<button type="submit" class="rounded-lg border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 transition-colors">Delete</button>
+						</form>
+					</div>
 				</div>
 				<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					<div>
